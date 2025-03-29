@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'screens/seating_chart_screen.dart';
 import 'models/class.dart';
 import 'models/student.dart';
+import 'screens/class_list_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,18 +12,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 初始化 7 个班级的数据
+    // 初始化 3 个班级的数据
     List<Class> allClasses = [];
-    for (int i = 1; i <= 7; i++) {
-      List<List<Student>> seatingChart = [];
-      for (int row = 0; row < 7; row++) {
-        List<Student> rowStudents = [];
-        for (int col = 0; col < 8; col++) {
-          rowStudents.add(Student(name: '学生${(row * 8 + col + 1)}'));
+    for (int i = 1; i <= 3; i++) {
+      List<Student> students = [];
+      for (int row = 1; row <= 7; row++) {
+        for (int col = 1; col <= 8; col++) {
+          students.add(Student(
+            name: '学生${(row - 1) * 8 + col}',
+            seatNumber: '$col$row',
+          ));
         }
-        seatingChart.add(rowStudents);
       }
-      allClasses.add(Class(name: '20220$i班', seatingChart: seatingChart));
+      Class newClass = Class(name: '20220$i班', students: students);
+      newClass.saveSeatingToHistory(1); // 保存第 1 周的座次记录
+      allClasses.add(newClass);
     }
 
     return MaterialApp(
@@ -31,7 +34,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: SeatingChartScreen(classes: allClasses),
+      home: ClassListScreen(classes: allClasses, currentWeek: 1),
     );
   }
-}    
+}

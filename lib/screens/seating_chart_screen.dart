@@ -3,9 +3,10 @@ import '../models/class.dart';
 import '../widgets/student_cell.dart';
 
 class SeatingChartScreen extends StatefulWidget {
-  final List<Class> classes;
+  final Class currentClass;
+  final int currentWeek;
 
-  const SeatingChartScreen({Key? key, required this.classes})
+  const SeatingChartScreen({Key? key, required this.currentClass, required this.currentWeek})
       : super(key: key);
 
   @override
@@ -13,33 +14,15 @@ class SeatingChartScreen extends StatefulWidget {
 }
 
 class _SeatingChartScreenState extends State<SeatingChartScreen> {
-  int _selectedClassIndex = 0;
-
-  void _onStudentMoved(int fromRow, int fromCol, int toRow, int toCol) {
-    setState(() {
-      widget.classes[_selectedClassIndex].moveStudent(
-          fromRow, fromCol, toRow, toCol);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final currentClass = widget.classes[_selectedClassIndex];
-    final rows = currentClass.seatingChart.length;
-    final cols = currentClass.seatingChart[0].length;
+    final rows = 2;
+    final cols = 8;
+    final seatingMap = widget.currentClass.getSeatingFromHistory(widget.currentWeek) ?? {};
 
     return Scaffold(
       appBar: AppBar(
-        bottom: TabBar(
-          onTap: (index) {
-            setState(() {
-              _selectedClassIndex = index;
-            });
-          },
-          tabs: List.generate(widget.classes.length, (index) {
-            return Tab(text: '20220${index + 1}班');
-          }),
-        ),
+        title: Text(widget.currentClass.name),
       ),
       body: Column(
         children: [
@@ -66,8 +49,8 @@ class _SeatingChartScreenState extends State<SeatingChartScreen> {
                       itemBuilder: (context, index) {
                         final row = index ~/ cols;
                         final col = index % cols;
-                        final student =
-                            currentClass.seatingChart[row][col];
+                        final seatNumber = '${col + 1}${rows - row}';
+                        final student = seatingMap[seatNumber];
                         return Transform(
                           transform: Matrix4.rotationX(3.14159), // 上下翻转单个单元格
                           alignment: Alignment.center,
@@ -95,4 +78,3 @@ class _SeatingChartScreenState extends State<SeatingChartScreen> {
     );
   }
 }
-    
