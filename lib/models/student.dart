@@ -4,6 +4,7 @@ class Student {
   int answeringScore;
   int assignmentScore;
   String seatNumber;
+  String gender; // 添加性别属性
 
   Student({
     required this.name,
@@ -11,5 +12,6 @@ class Student {
     this.answeringScore = 0,
     this.assignmentScore = 0,
     required this.seatNumber,
+    required this.gender, // 初始化性别
   });
-}
+}    

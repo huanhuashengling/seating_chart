@@ -3,19 +3,31 @@ import '../models/student.dart';
 
 class StudentCell extends StatelessWidget {
   final Student? student;
+  final Function(Student, int, int, int) onScoreChanged;
 
-  const StudentCell({Key? key, this.student}) : super(key: key);
+  const StudentCell({
+    Key? key,
+    this.student,
+    required this.onScoreChanged,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final int disciplineScore = student?.disciplineScore ?? 0;
     final int answeringScore = student?.answeringScore ?? 0;
     final int assignmentScore = student?.assignmentScore ?? 0;
-    final totalScore = disciplineScore + answeringScore + assignmentScore;
+    final int totalScore = disciplineScore + answeringScore + assignmentScore;
+    // 根据性别设置背景颜色
+    Color backgroundColor;
+    if (student != null) {
+      backgroundColor = student!.gender == '女' ? Colors.pink[100]! : Colors.blue[100]!;
+    } else {
+      backgroundColor = Colors.white;
+    }
     return Container(
-      margin: const EdgeInsets.all(4),
+      margin: const EdgeInsets.all(1), // 减小 margin 来减小宽度
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.grey),
         boxShadow: [
           BoxShadow(
@@ -25,50 +37,57 @@ class StudentCell extends StatelessWidget {
             offset: const Offset(0, 2),
           ),
         ],
+        color: backgroundColor, // 设置背景颜色
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(30, 30),
-                    padding: const EdgeInsets.all(8),
+                    minimumSize: const Size(25, 25), // 调整按钮大小
+                    padding: const EdgeInsets.all(2),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                   onPressed: () {
-                    // 处理课堂纪律评价
+                    if (student != null) {
+                      onScoreChanged(student!, 1, 0, 0);
+                    }
                   },
                   child: const Text('👮'),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(30, 30),
-                    padding: const EdgeInsets.all(8),
+                    minimumSize: const Size(25, 25), // 调整按钮大小
+                    padding: const EdgeInsets.all(2),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                   onPressed: () {
-                    // 处理举手答问评价
+                    if (student != null) {
+                      onScoreChanged(student!, 0, 1, 0);
+                    }
                   },
                   child: const Text('🙋'),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(30, 30),
-                    padding: const EdgeInsets.all(8),
+                    minimumSize: const Size(25, 25), // 调整按钮大小
+                    padding: const EdgeInsets.all(2),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                   onPressed: () {
-                    // 处理课堂作业完成情况评价
+                    if (student != null) {
+                      onScoreChanged(student!, 0, 0, 1);
+                    }
                   },
                   child: const Text('📚'),
                 ),
@@ -78,16 +97,16 @@ class StudentCell extends StatelessWidget {
           if (student != null)
             Text(
               student!.name,
-              style: TextStyle(
-                fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
-              ),
+              style: TextStyle(fontSize: 16),
             ),
           if (student != null)
             Text(
-              '合计: $totalScore 分',
+              '$disciplineScore  $answeringScore  $assignmentScore  $totalScore',
+              style: TextStyle(fontSize: 12),
             ),
         ],
       ),
     );
   }
 }
+    

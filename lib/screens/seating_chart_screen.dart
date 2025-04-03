@@ -1,80 +1,92 @@
 import 'package:flutter/material.dart';
 import '../models/class.dart';
+import '../models/student.dart';
 import '../widgets/student_cell.dart';
 
 class SeatingChartScreen extends StatefulWidget {
   final Class currentClass;
   final int currentWeek;
 
-  const SeatingChartScreen({Key? key, required this.currentClass, required this.currentWeek})
-      : super(key: key);
+  const SeatingChartScreen({
+    Key? key,
+    required this.currentClass,
+    required this.currentWeek,
+  }) : super(key: key);
 
   @override
   _SeatingChartScreenState createState() => _SeatingChartScreenState();
 }
 
 class _SeatingChartScreenState extends State<SeatingChartScreen> {
+  double? cellHeight;
+
+  void _onScoreChanged(Student student, int disciplineDelta, int answeringDelta, int assignmentDelta) {
+    setState(() {
+      student.disciplineScore += disciplineDelta;
+      student.answeringScore += answeringDelta;
+      student.assignmentScore += assignmentDelta;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final rows = 2;
-    final cols = 8;
+    final rows = 9;
+    final cols = 9;
     final seatingMap = widget.currentClass.getSeatingFromHistory(widget.currentWeek) ?? {};
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.currentClass.name),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                // 行序号
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ...List.generate(rows, (row) => Text('${rows - row}')),
-                  ],
-                ),
-                Expanded(
-                  child: Transform(
-                    transform: Matrix4.rotationX(3.14159), // 上下翻转
-                    alignment: Alignment.center,
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: cols,
-                        childAspectRatio: 1 / (2 / 3), // 高度减少三分之一
-                      ),
-                      itemCount: rows * cols,
-                      itemBuilder: (context, index) {
-                        final row = index ~/ cols;
-                        final col = index % cols;
-                        final seatNumber = '${col + 1}${rows - row}';
-                        final student = seatingMap[seatNumber];
-                        return Transform(
-                          transform: Matrix4.rotationX(3.14159), // 上下翻转单个单元格
-                          alignment: Alignment.center,
-                          child: StudentCell(
+    return Column(
+      children: [
+        Table(
+          border: TableBorder.all(color: Colors.grey),
+          columnWidths: {
+            0: FixedColumnWidth(30), // 行头宽度
+          },
+          children: [
+            // 从下往上生成行
+            ...List.generate(rows - 1, (index) {
+              final row = rows - 2 - index; 
+              return TableRow(
+                children: [
+                  Center(child: Text('${row + 1}')),
+                  ...List.generate(cols - 1, (col) {
+                    final seatNumber = '${col + 1}${row + 1}';
+                    final student = seatingMap[seatNumber];
+                    if (student != null) {
+                      return LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (cellHeight == null) {
+                            cellHeight = constraints.maxHeight;
+                            debugPrint('Cell height: $cellHeight'); 
+                          }
+                          return StudentCell(
                             student: student,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+                            onScoreChanged: _onScoreChanged,
+                          );
+                        },
+                      );
+                    } else {
+                      return Container(
+                        height: 70.0,
+                        margin: const EdgeInsets.all(1),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.grey),
+                        ),
+                      );
+                    }
+                  }),
+                ],
+              );
+            }),
+            TableRow(
+              children: [
+                const SizedBox.shrink(), // 左上角空白
+                ...List.generate(cols - 1, (col) => Center(child: Text('${col + 1}'))),
               ],
             ),
-          ),
-          // 组号
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              const SizedBox(width: 30), // 为行序号留出空间
-              ...List.generate(cols, (col) => Text('${col + 1}组')),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
-}
+}    

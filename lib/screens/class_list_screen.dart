@@ -6,8 +6,11 @@ class ClassListScreen extends StatefulWidget {
   final List<Class> classes;
   final int currentWeek;
 
-  const ClassListScreen({Key? key, required this.classes, required this.currentWeek})
-      : super(key: key);
+  const ClassListScreen({
+    Key? key,
+    required this.classes,
+    required this.currentWeek,
+  }) : super(key: key);
 
   @override
   _ClassListScreenState createState() => _ClassListScreenState();
@@ -15,26 +18,88 @@ class ClassListScreen extends StatefulWidget {
 
 class _ClassListScreenState extends State<ClassListScreen> {
   int _selectedClassIndex = 0;
+  bool _isToolbarExpanded = true;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        bottom: TabBar(
-          onTap: (index) {
-            setState(() {
-              _selectedClassIndex = index;
-            });
-          },
-          tabs: List.generate(widget.classes.length, (index) {
-            return Tab(text: widget.classes[index].name);
-          }),
+    return DefaultTabController(
+      length: widget.classes.length,
+      child: Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 0,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(48),
+            child: Container(
+              color: Theme.of(context).primaryColor,
+              child: TabBar(
+                onTap: (index) {
+                  setState(() {
+                    _selectedClassIndex = index;
+                  });
+                },
+                tabs: List.generate(widget.classes.length, (index) {
+                  return Tab(text: widget.classes[index].name);
+                }),
+              ),
+            ),
+          ),
         ),
-      ),
-      body: SeatingChartScreen(
-        currentClass: widget.classes[_selectedClassIndex],
-        currentWeek: widget.currentWeek,
+        body: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: SeatingChartScreen(
+                currentClass: widget.classes[_selectedClassIndex],
+                currentWeek: widget.currentWeek,
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: _isToolbarExpanded
+                  ? MediaQuery.of(context).size.width / 8
+                  : 30,
+              color: Colors.grey[200],
+              padding: _isToolbarExpanded
+                  ? const EdgeInsets.all(16)
+                  : EdgeInsets.zero,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    icon: Icon(_isToolbarExpanded
+                        ? Icons.arrow_back
+                        : Icons.arrow_forward),
+                    onPressed: () {
+                      setState(() {
+                        _isToolbarExpanded = !_isToolbarExpanded;
+                      });
+                    },
+                  ),
+                  if (_isToolbarExpanded) ...[
+                    Text(
+                      '工具栏',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text('座位状态'),
+                    SizedBox(height: 8),
+                    Text('调整'),
+                    SizedBox(height: 8),
+                    Text('固定状态'),
+                    SizedBox(height: 8),
+                    Text('刷新或保存座位设置'),
+                    SizedBox(height: 16),
+                    Text('多选学生时显示批量评价操作'),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-}
+}    

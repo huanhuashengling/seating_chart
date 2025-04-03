@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'models/class.dart';
 import 'models/student.dart';
 import 'screens/class_list_screen.dart';
+import 'dart:math';
 
 void main() {
   runApp(const MyApp());
@@ -12,15 +13,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 初始化 3 个班级的数据
+    // 初始化多个班级的数据
     List<Class> allClasses = [];
     for (int i = 1; i <= 3; i++) {
       List<Student> students = [];
       for (int row = 1; row <= 7; row++) {
         for (int col = 1; col <= 8; col++) {
+          // 随机分配性别
+          String gender = Random().nextBool() ? '男' : '女';
           students.add(Student(
             name: '学生${(row - 1) * 8 + col}',
             seatNumber: '$col$row',
+            gender: gender,
           ));
         }
       }
@@ -37,4 +41,4 @@ class MyApp extends StatelessWidget {
       home: ClassListScreen(classes: allClasses, currentWeek: 1),
     );
   }
-}
+}    
