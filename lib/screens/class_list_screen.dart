@@ -19,6 +19,7 @@ class ClassListScreen extends StatefulWidget {
 class _ClassListScreenState extends State<ClassListScreen> {
   int _selectedClassIndex = 0;
   bool _isToolbarExpanded = true;
+  bool _isDraggable = false; // 新增：控制座位是否可拖动
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
             child: Container(
               color: Theme.of(context).primaryColor,
               child: TabBar(
-                labelColor: Colors.white, // 设置标签文字颜色为白色
+                labelColor: Colors.white,
                 onTap: (index) {
                   setState(() {
                     _selectedClassIndex = index;
@@ -52,6 +53,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
               child: SeatingChartScreen(
                 currentClass: widget.classes[_selectedClassIndex],
                 currentWeek: widget.currentWeek,
+                isDraggable: _isDraggable, // 传递是否可拖动状态
               ),
             ),
             AnimatedContainer(
@@ -85,7 +87,19 @@ class _ClassListScreenState extends State<ClassListScreen> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    Text('座位状态'),
+                    Row(
+                      children: [
+                        Text('允许拖动'),
+                        Switch(
+                          value: _isDraggable,
+                          onChanged: (value) {
+                            setState(() {
+                              _isDraggable = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                     SizedBox(height: 8),
                     Text('调整'),
                     SizedBox(height: 8),
