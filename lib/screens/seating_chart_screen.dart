@@ -36,6 +36,10 @@ class _SeatingChartScreenState extends State<SeatingChartScreen> {
 
     return Column(
       children: [
+        // 添加一个 Expanded 组件占据剩余空间
+        Expanded(
+          child: Container(),
+        ),
         Table(
           border: TableBorder.all(color: Colors.grey),
           columnWidths: {
@@ -89,4 +93,4 @@ class _SeatingChartScreenState extends State<SeatingChartScreen> {
       ],
     );
   }
-}    
+}

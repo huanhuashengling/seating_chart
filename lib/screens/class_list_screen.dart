@@ -32,6 +32,7 @@ class _ClassListScreenState extends State<ClassListScreen> {
             child: Container(
               color: Theme.of(context).primaryColor,
               child: TabBar(
+                labelColor: Colors.white, // 设置标签文字颜色为白色
                 onTap: (index) {
                   setState(() {
                     _selectedClassIndex = index;
@@ -102,4 +103,4 @@ class _ClassListScreenState extends State<ClassListScreen> {
       ),
     );
   }
-}    
+}
