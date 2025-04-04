@@ -90,14 +90,17 @@ class _ClassListScreenState extends State<ClassListScreen> {
                     Row(
                       children: [
                         Text('允许拖动'),
-                        Switch(
-                          value: _isDraggable,
-                          onChanged: (value) {
-                            setState(() {
-                              _isDraggable = value;
-                            });
-                          },
-                        ),
+                        Transform.scale(
+                          scale: 0.7,
+                          child: Switch(
+                            value: _isDraggable,
+                            onChanged: (value) {
+                              setState(() {
+                                _isDraggable = value;
+                              });
+                            },
+                          ),
+                        )
                       ],
                     ),
                     SizedBox(height: 8),
