@@ -33,7 +33,7 @@ dependencies:
   shared_preferences: ^2.2.2 # 根据最新版本填写
   sqflite: ^2.2.8+4
   sqflite_common_ffi: ^2.2.8+4
-  sqflite_common_ffi_web:
+  sqflite_common_ffi_web: 
   path: ^1.8.3
 
   # The following adds the Cupertino Icons font to your application.
@@ -61,6 +61,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/students.txt
 
   # To add assets to your application, add an assets section, like this:
   # assets:

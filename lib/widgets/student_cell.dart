@@ -119,7 +119,7 @@ class StudentCell extends StatelessWidget {
               children: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(40, 25), // 调整按钮大小
+                    minimumSize: const Size(30, 25), // 调整按钮大小
                     padding: const EdgeInsets.all(2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(3),
@@ -132,7 +132,7 @@ class StudentCell extends StatelessWidget {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(40, 25), // 调整按钮大小
+                    minimumSize: const Size(30, 25), // 调整按钮大小
                     padding: const EdgeInsets.all(2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(3),
@@ -145,7 +145,7 @@ class StudentCell extends StatelessWidget {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(40, 25), // 调整按钮大小
+                    minimumSize: const Size(30, 25), // 调整按钮大小
                     padding: const EdgeInsets.all(2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(3),

@@ -8,6 +8,10 @@ class DatabaseUtils {
 
   // 初始化 databaseFactory
   static void _initDatabaseFactory() {
+    if (Platform.isAndroid) {
+      // 安卓平台无需特殊初始化
+      return;
+    }
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
@@ -26,12 +30,13 @@ class DatabaseUtils {
       version: 1,
       onCreate: (db, version) {
         return db.execute(
-          'CREATE TABLE students(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, record TEXT)',
+          'CREATE TABLE students(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, disciplineScore INTEGER, answeringScore INTEGER, assignmentScore INTEGER, seatNumber TEXT, gender TEXT, className TEXT)',
         );
       },
     );
   }
 
+  // 插入学生信息
   Future<void> insertStudent(Student student) async {
     final db = await database;
     await db.insert(
@@ -41,18 +46,16 @@ class DatabaseUtils {
     );
   }
 
+  // 查询所有学生信息
   Future<List<Student>> getStudents() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('students');
     return List.generate(maps.length, (i) {
-      return Student(
-        id: maps[i]['id'],
-        name: maps[i]['name'],
-        record: maps[i]['record'],
-      );
+      return Student.fromMap(maps[i]);
     });
   }
 
+  // 更新学生信息
   Future<void> updateStudent(Student student) async {
     final db = await database;
     await db.update(
