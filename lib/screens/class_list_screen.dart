@@ -27,95 +27,61 @@ class _ClassListScreenState extends State<ClassListScreen> {
       length: widget.classes.length,
       child: Scaffold(
         appBar: AppBar(
-          toolbarHeight: 0,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(48),
-            child: Container(
-              color: Theme.of(context).primaryColor,
-              child: TabBar(
-                labelColor: Colors.white,
-                onTap: (index) {
-                  setState(() {
-                    _selectedClassIndex = index;
-                  });
-                },
-                tabs: List.generate(widget.classes.length, (index) {
-                  return Tab(text: widget.classes[index].name);
-                }),
-              ),
-            ),
+          title: Text('座次表应用'),
+          bottom: TabBar(
+            labelColor: Colors.white,
+            onTap: (index) {
+              setState(() {
+                _selectedClassIndex = index;
+              });
+            },
+            tabs: List.generate(widget.classes.length, (index) {
+              return Tab(text: widget.classes[index].name);
+            }),
           ),
-        ),
-        body: Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: SeatingChartScreen(
-                currentClass: widget.classes[_selectedClassIndex],
-                currentWeek: widget.currentWeek,
-                isDraggable: _isDraggable, // 传递是否可拖动状态
-              ),
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: _isToolbarExpanded
-                  ? MediaQuery.of(context).size.width / 8
-                  : 30,
-              color: Colors.grey[200],
-              padding: _isToolbarExpanded
-                  ? const EdgeInsets.all(16)
-                  : EdgeInsets.zero,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          actions: [
+            if (_isToolbarExpanded) ...[
+              Row(
                 children: [
-                  IconButton(
-                    icon: Icon(_isToolbarExpanded
-                        ? Icons.arrow_back
-                        : Icons.arrow_forward),
-                    onPressed: () {
-                      setState(() {
-                        _isToolbarExpanded = !_isToolbarExpanded;
-                      });
-                    },
+                  Text('允许拖动'),
+                  Transform.scale(
+                    scale: 0.7,
+                    child: Switch(
+                      value: _isDraggable,
+                      onChanged: (value) {
+                        setState(() {
+                          _isDraggable = value;
+                        });
+                      },
+                    ),
                   ),
-                  if (_isToolbarExpanded) ...[
-                    Text(
-                      '工具栏',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Text('允许拖动'),
-                        Transform.scale(
-                          scale: 0.7,
-                          child: Switch(
-                            value: _isDraggable,
-                            onChanged: (value) {
-                              setState(() {
-                                _isDraggable = value;
-                              });
-                            },
-                          ),
-                        )
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Text('调整'),
-                    SizedBox(height: 8),
-                    Text('固定状态'),
-                    SizedBox(height: 8),
-                    Text('刷新或保存座位设置'),
-                    SizedBox(height: 16),
-                    Text('多选学生时显示批量评价操作'),
-                  ],
+                  SizedBox(width: 16),
+                  Text('调整'),
+                  SizedBox(width: 16),
+                  Text('固定状态'),
+                  SizedBox(width: 16),
+                  Text('刷新或保存座位设置'),
+                  SizedBox(width: 16),
+                  Text('多选学生时显示批量评价操作'),
                 ],
               ),
+            ],
+            IconButton(
+              icon: Icon(_isToolbarExpanded
+                  ? Icons.arrow_forward
+                  : Icons.arrow_back),
+              onPressed: () {
+                setState(() {
+                  _isToolbarExpanded = !_isToolbarExpanded;
+                });
+              },
             ),
           ],
+        ),
+        body: SeatingChartScreen(
+          currentClass: widget.classes[_selectedClassIndex],
+          currentWeek: widget.currentWeek,
+          isDraggable: _isDraggable, // 传递是否可拖动状态
         ),
       ),
     );
