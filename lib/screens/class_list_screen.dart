@@ -67,33 +67,41 @@ class _ClassListScreenState extends State<ClassListScreen> {
           children: [
             // 工具栏
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 0), // 调整内边距
               color: Colors.grey[200],
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // 使左右组件分别居左和居右
                 children: [
-                  Text('允许拖动'),
-                  Transform.scale(
-                    scale: 0.7,
-                    child: Switch(
-                      value: _isDraggable,
-                      onChanged: (value) {
-                        setState(() {
-                          _isDraggable = value;
-                        });
-                      },
-                    ),
+                  // 允许拖动和 Switch 按钮组合
+                  Row(
+                    children: [
+                      Text('允许拖动'),
+                      Transform.scale(
+                        scale: 0.7,
+                        child: Switch(
+                          value: _isDraggable,
+                          onChanged: (value) {
+                            setState(() {
+                              _isDraggable = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  Text('调整'),
-                  Text('固定状态'),
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios),
-                    onPressed: _currentWeek > 1 ? _previousWeek : null,
-                  ),
-                  Text(' 第 $_currentWeek 周 '),
-                  IconButton(
-                    icon: Icon(Icons.arrow_forward_ios),
-                    onPressed: _currentWeek < currentWeek ? _nextWeek : null,
+                  // 上一周、下一周和周次信息组合
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.arrow_back_ios),
+                        onPressed: _currentWeek > 1 ? _previousWeek : null,
+                      ),
+                      Text(' 第 $_currentWeek 周 '),
+                      IconButton(
+                        icon: Icon(Icons.arrow_forward_ios),
+                        onPressed: _currentWeek < currentWeek ? _nextWeek : null,
+                      ),
+                    ],
                   ),
                 ],
               ),
