@@ -86,8 +86,6 @@ class _ClassListScreenState extends State<ClassListScreen> {
                   ),
                   Text('调整'),
                   Text('固定状态'),
-                  Text('刷新或保存座位设置'),
-                  Text('多选学生时显示批量评价操作'),
                   IconButton(
                     icon: Icon(Icons.arrow_back_ios),
                     onPressed: _currentWeek > 1 ? _previousWeek : null,
