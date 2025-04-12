@@ -113,7 +113,7 @@ class StudentCell extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -128,7 +128,7 @@ class StudentCell extends StatelessWidget {
                   onPressed: () {
                     _showScoreDialog(context, 1, 0, 0);
                   },
-                  child: const Text('👮'),
+                  child: Text('👮 $disciplineScore'),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -141,7 +141,7 @@ class StudentCell extends StatelessWidget {
                   onPressed: () {
                     _showScoreDialog(context, 0, 1, 0);
                   },
-                  child: const Text('🙋'),
+                  child: Text('🙋 $answeringScore'),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -154,20 +154,15 @@ class StudentCell extends StatelessWidget {
                   onPressed: () {
                     _showScoreDialog(context, 0, 0, 1);
                   },
-                  child: const Text('📚'),
+                  child: Text('📚 $assignmentScore'),
                 ),
               ],
             ),
           ),
           if (student != null)
             Text(
-              student!.name,
+              '${student!.name} ($totalScore)',
               style: TextStyle(fontSize: 16),
-            ),
-          if (student != null)
-            Text(
-              '$disciplineScore  $answeringScore  $assignmentScore  $totalScore',
-              style: TextStyle(fontSize: 14),
             ),
         ],
       ),
