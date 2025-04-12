@@ -29,7 +29,9 @@ class _ClassListScreenState extends State<ClassListScreen> {
         appBar: AppBar(
           title: Text('座次表应用'),
           bottom: TabBar(
-            labelColor: Colors.white,
+            labelColor: Colors.green, // 设置已选择的班级名称颜色
+            unselectedLabelColor: Colors.indigoAccent, // 设置未选择的班级名称颜色
+            indicatorColor: Colors.pink, // 设置指示器颜色
             onTap: (index) {
               setState(() {
                 _selectedClassIndex = index;
