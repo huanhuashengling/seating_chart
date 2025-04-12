@@ -18,8 +18,7 @@ class ClassListScreen extends StatefulWidget {
 
 class _ClassListScreenState extends State<ClassListScreen> {
   int _selectedClassIndex = 0;
-  bool _isToolbarExpanded = true;
-  bool _isDraggable = false; // 新增：控制座位是否可拖动
+  bool _isDraggable = false; // 控制座位是否可拖动
   int _currentWeek = 1;
 
   @override
@@ -63,22 +62,15 @@ class _ClassListScreenState extends State<ClassListScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text('座次表应用'),
-          bottom: TabBar(
-            labelColor: Colors.green, // 设置已选择的班级名称颜色
-            unselectedLabelColor: Colors.indigoAccent, // 设置未选择的班级名称颜色
-            indicatorColor: Colors.pink, // 设置指示器颜色
-            onTap: (index) {
-              setState(() {
-                _selectedClassIndex = index;
-              });
-            },
-            tabs: List.generate(widget.classes.length, (index) {
-              return Tab(text: widget.classes[index].name);
-            }),
-          ),
-          actions: [
-            if (_isToolbarExpanded) ...[
-              Row(
+        ),
+        body: Column(
+          children: [
+            // 工具栏
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+              color: Colors.grey[200],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Text('允许拖动'),
                   Transform.scale(
@@ -92,15 +84,10 @@ class _ClassListScreenState extends State<ClassListScreen> {
                       },
                     ),
                   ),
-                  SizedBox(width: 16),
                   Text('调整'),
-                  SizedBox(width: 16),
                   Text('固定状态'),
-                  SizedBox(width: 16),
                   Text('刷新或保存座位设置'),
-                  SizedBox(width: 16),
                   Text('多选学生时显示批量评价操作'),
-                  SizedBox(width: 16),
                   IconButton(
                     icon: Icon(Icons.arrow_back_ios),
                     onPressed: _currentWeek > 1 ? _previousWeek : null,
@@ -112,23 +99,30 @@ class _ClassListScreenState extends State<ClassListScreen> {
                   ),
                 ],
               ),
-            ],
-            IconButton(
-              icon: Icon(_isToolbarExpanded
-                  ? Icons.arrow_forward
-                  : Icons.arrow_back),
-              onPressed: () {
+            ),
+            // 班级切换 TabBar
+            TabBar(
+              labelColor: Colors.green, // 设置已选择的班级名称颜色
+              unselectedLabelColor: Colors.indigoAccent, // 设置未选择的班级名称颜色
+              indicatorColor: Colors.pink, // 设置指示器颜色
+              onTap: (index) {
                 setState(() {
-                  _isToolbarExpanded = !_isToolbarExpanded;
+                  _selectedClassIndex = index;
                 });
               },
+              tabs: List.generate(widget.classes.length, (index) {
+                return Tab(text: widget.classes[index].name);
+              }),
+            ),
+            // 座位表
+            Expanded(
+              child: SeatingChartScreen(
+                currentClass: widget.classes[_selectedClassIndex],
+                currentWeek: _currentWeek,
+                isDraggable: _isDraggable, // 传递是否可拖动状态
+              ),
             ),
           ],
-        ),
-        body: SeatingChartScreen(
-          currentClass: widget.classes[_selectedClassIndex],
-          currentWeek: _currentWeek,
-          isDraggable: _isDraggable, // 传递是否可拖动状态
         ),
       ),
     );
