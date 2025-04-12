@@ -62,6 +62,17 @@ class _ClassListScreenState extends State<ClassListScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text('座次表应用'),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Center(
+                child: Text(
+                  '第$currentWeek周',
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
+          ],
         ),
         body: Column(
           children: [
