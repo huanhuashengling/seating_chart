@@ -57,7 +57,10 @@ void main() async {
   for (var className in classNames) {
     List<Student> classStudents = allStudents.where((student) => student.className == className).toList();
     Class newClass = Class(name: className, students: classStudents);
-    newClass.saveSeatingToHistory(1); // 保存第 1 周的座次记录
+    await newClass.loadSeatingHistoryFromStorage(); // 加载座次历史记录
+    if (newClass.getSeatingFromHistory(1) == null) {
+      newClass.saveSeatingToHistory(1); // 保存第 1 周的座次记录
+    }
     allClasses.add(newClass);
   }
 
