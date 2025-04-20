@@ -19,7 +19,7 @@ class ClassListScreen extends StatefulWidget {
 class _ClassListScreenState extends State<ClassListScreen> {
   int _selectedClassIndex = 0;
   bool _isDraggable = false; // 控制座位是否可拖动
-  int _currentWeek = 1;
+  int _currentWeek = 11;
 
   @override
   void initState() {

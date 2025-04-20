@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/class.dart';
 import '../models/student.dart';
+import '../models/week_seat_log.dart';
 import '../widgets/student_cell.dart';
+import '../utils/database_utils.dart';
+
 
 class SeatingChartScreen extends StatefulWidget {
   final Class currentClass;
@@ -31,11 +34,75 @@ class _SeatingChartScreenState extends State<SeatingChartScreen> {
   }
 
   // 交换两个学生的座位
-  void _swapSeats(Student student1, Student student2) {
-    String tempSeatNumber = student1.seatNumber;
-    student1.seatNumber = student2.seatNumber;
-    student2.seatNumber = tempSeatNumber;
-    widget.currentClass.saveSeatingToHistory(widget.currentWeek);
+  Future<void> _swapSeats(Student student1, Student student2) async {
+    final db = await DatabaseUtils().database;
+    final now = DateTime.now();
+
+    // 获取学生1的当前座位记录
+    final seatLog1 = await db.query(
+      DatabaseUtils.tableWeekSeatLog,
+      where: '${DatabaseUtils.columnWeekSeatLogStudentId} = ? AND ${DatabaseUtils.columnWeekSeatLogWeek} = ?',
+      whereArgs: [student1.id, widget.currentWeek],
+    );
+
+    // 获取学生2的当前座位记录
+    final seatLog2 = await db.query(
+      DatabaseUtils.tableWeekSeatLog,
+      where: '${DatabaseUtils.columnWeekSeatLogStudentId} = ? AND ${DatabaseUtils.columnWeekSeatLogWeek} = ?',
+      whereArgs: [student2.id, widget.currentWeek],
+    );
+
+    // 交换座位号
+    String tempSeatNumber = seatLog1.isNotEmpty ? seatLog1.first[DatabaseUtils.columnWeekSeatLogSeatNumber] as String : '';
+    String newSeatNumber1 = seatLog2.isNotEmpty ? seatLog2.first[DatabaseUtils.columnWeekSeatLogSeatNumber] as String : '';
+    String newSeatNumber2 = tempSeatNumber;
+
+    // 更新学生1的座位记录
+    if (seatLog1.isNotEmpty) {
+      await db.update(
+        DatabaseUtils.tableWeekSeatLog,
+        {
+          DatabaseUtils.columnWeekSeatLogSeatNumber: newSeatNumber1,
+          DatabaseUtils.columnWeekSeatLogUpdateTime: now.toIso8601String(),
+        },
+        where: '${DatabaseUtils.columnWeekSeatLogStudentId} = ? AND ${DatabaseUtils.columnWeekSeatLogWeek} = ?',
+        whereArgs: [student1.id, widget.currentWeek],
+      );
+    } else {
+      await db.insert(
+        DatabaseUtils.tableWeekSeatLog,
+        {
+          DatabaseUtils.columnWeekSeatLogStudentId: student1.id,
+          DatabaseUtils.columnWeekSeatLogSeatNumber: newSeatNumber1,
+          DatabaseUtils.columnWeekSeatLogWeek: widget.currentWeek,
+          DatabaseUtils.columnWeekSeatLogUpdateTime: now.toIso8601String(),
+        },
+      );
+    }
+
+    // 更新学生2的座位记录
+    if (seatLog2.isNotEmpty) {
+      await db.update(
+        DatabaseUtils.tableWeekSeatLog,
+        {
+          DatabaseUtils.columnWeekSeatLogSeatNumber: newSeatNumber2,
+          DatabaseUtils.columnWeekSeatLogUpdateTime: now.toIso8601String(),
+        },
+        where: '${DatabaseUtils.columnWeekSeatLogStudentId} = ? AND ${DatabaseUtils.columnWeekSeatLogWeek} = ?',
+        whereArgs: [student2.id, widget.currentWeek],
+      );
+    } else {
+      await db.insert(
+        DatabaseUtils.tableWeekSeatLog,
+        {
+          DatabaseUtils.columnWeekSeatLogStudentId: student2.id,
+          DatabaseUtils.columnWeekSeatLogSeatNumber: newSeatNumber2,
+          DatabaseUtils.columnWeekSeatLogWeek: widget.currentWeek,
+          DatabaseUtils.columnWeekSeatLogUpdateTime: now.toIso8601String(),
+        },
+      );
+    }
+
     setState(() {});
   }
 
@@ -43,121 +110,140 @@ class _SeatingChartScreenState extends State<SeatingChartScreen> {
   Widget build(BuildContext context) {
     final rows = 9;
     final cols = 9;
-    final seatingMap = widget.currentClass.getSeatingFromHistory(widget.currentWeek) ?? {};
 
-    return Column( // 48行开始
-      // 创建一个垂直布局的Column组件
-      children: [ // 定义Column组件的子组件列表
-        Expanded(
-          // 该Expanded组件会占据剩余的垂直空间，这里先空着，可能后续用于添加其他内容
-          child: Container(),
-        ),
-        Table(
-          // 创建一个表格组件，用于展示座位表
-          border: TableBorder.all(color: Colors.grey), // 为表格添加灰色边框
-          columnWidths: {
-            // 定义表格第一列的宽度为固定的30像素
-            0: FixedColumnWidth(30),
-          },
-          children: [
-            // 生成表格的行，从第1行到第rows - 1行（这里是从第1行到第8行）
-            ...List.generate(rows - 1, (index) {
-              final row = rows - 2 - index; // 计算当前行的索引
-              return TableRow(
-                // 创建一个表格行
+    return FutureBuilder<Map<String, Student>>(
+      future: widget.currentClass.getSeatingFromHistory(widget.currentWeek),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final seatingMap = snapshot.data ?? {};
+
+          return Column(
+            children: [
+              Expanded(
+                child: Container(),
+              ),
+              Table(
+                border: TableBorder.all(color: Colors.grey),
+                columnWidths: {
+                  0: FixedColumnWidth(30),
+                },
                 children: [
-                  // 表格的第一列，显示行号
-                  Center(child: Text('${row + 1}')),
-                  // 生成表格的列，从第1列到第cols - 1列（这里是从第1列到第8列）
-                  ...List.generate(cols - 1, (col) {
-                    final seatNumber = '${col + 1}${row + 1}'; // 生成座位号
-                    final student = seatingMap[seatNumber]; // 根据座位号从座位映射中获取学生信息
-                    if (student != null) {
-                      // 如果该座位有学生
-                      return LayoutBuilder(
-                        // 使用LayoutBuilder来获取当前单元格的约束信息
-                        builder: (context, constraints) {
-                          if (cellHeight == null) {
-                            // 如果还没有记录单元格的高度，则记录当前单元格的最大高度
-                            cellHeight = constraints.maxHeight;
-                            debugPrint('Cell height: $cellHeight');
-                          }
-                          return DragTarget<Student>(
-                            // 创建一个可接收拖动对象的目标区域
-                            onAccept: (draggedStudent) {
-                              // 当有拖动对象被接受时，执行交换座位的操作
-                              if (widget.isDraggable) {
-                                _swapSeats(student, draggedStudent);
-                              }
-                            },
-                            builder: (context, candidateData, rejectedData) {
-                              return Draggable<Student>(
-                                // 创建一个可拖动的对象
-                                data: student, // 拖动的数据为当前学生对象
-                                child: StudentCell(
-                                  // 正常显示的学生单元格
-                                  student: student,
-                                  onScoreChanged: _onScoreChanged,
-                                ),
-                                feedback: StudentCell(
-                                  // 拖动时显示的反馈单元格
-                                  student: student,
-                                  onScoreChanged: _onScoreChanged,
-                                ),
-                                childWhenDragging: Container(
-                                  // 拖动时原位置显示的占位容器
+                  ...List.generate(rows - 1, (index) {
+                    final row = rows - 2 - index;
+                    return TableRow(
+                      children: [
+                        Center(child: Text('${row + 1}')),
+                        ...List.generate(cols - 1, (col) {
+                          final seatNumber = '${col + 1}${row + 1}';
+                          final student = seatingMap[seatNumber];
+                          if (student != null) {
+                            return LayoutBuilder(
+                              builder: (context, constraints) {
+                                if (cellHeight == null) {
+                                  cellHeight = constraints.maxHeight;
+                                  debugPrint('Cell height: $cellHeight');
+                                }
+                                return DragTarget<Student>(
+                                  onAccept: (draggedStudent) async {
+                                    if (widget.isDraggable) {
+                                      await _swapSeats(student, draggedStudent);
+                                    }
+                                  },
+                                  builder: (context, candidateData, rejectedData) {
+                                    return Draggable<Student>(
+                                      data: student,
+                                      child: StudentCell(
+                                        student: student,
+                                        onScoreChanged: _onScoreChanged,
+                                      ),
+                                      feedback: StudentCell(
+                                        student: student,
+                                        onScoreChanged: _onScoreChanged,
+                                      ),
+                                      childWhenDragging: Container(
+                                        height: 70.0,
+                                        margin: const EdgeInsets.all(1),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: Colors.grey),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          } else {
+                            return DragTarget<Student>(
+                              onAccept: (draggedStudent) async {
+                                if (widget.isDraggable) {
+                                  final db = await DatabaseUtils().database;
+                                  final now = DateTime.now();
+
+                                  // 检查是否已有该学生本周的座位记录
+                                  final seatLog = await db.query(
+                                    DatabaseUtils.tableWeekSeatLog,
+                                    where: '${DatabaseUtils.columnWeekSeatLogStudentId} = ? AND ${DatabaseUtils.columnWeekSeatLogWeek} = ?',
+                                    whereArgs: [draggedStudent.id, widget.currentWeek],
+                                  );
+
+                                  if (seatLog.isNotEmpty) {
+                                    await db.update(
+                                      DatabaseUtils.tableWeekSeatLog,
+                                      {
+                                        DatabaseUtils.columnWeekSeatLogSeatNumber: seatNumber,
+                                        DatabaseUtils.columnWeekSeatLogUpdateTime: now.toIso8601String(),
+                                      },
+                                      where: '${DatabaseUtils.columnWeekSeatLogStudentId} = ? AND ${DatabaseUtils.columnWeekSeatLogWeek} = ?',
+                                      whereArgs: [draggedStudent.id, widget.currentWeek],
+                                    );
+                                  } else {
+                                    await db.insert(
+                                      DatabaseUtils.tableWeekSeatLog,
+                                      {
+                                        DatabaseUtils.columnWeekSeatLogStudentId: draggedStudent.id,
+                                        DatabaseUtils.columnWeekSeatLogSeatNumber: seatNumber,
+                                        DatabaseUtils.columnWeekSeatLogWeek: widget.currentWeek,
+                                        DatabaseUtils.columnWeekSeatLogUpdateTime: now.toIso8601String(),
+                                      },
+                                    );
+                                  }
+
+                                  setState(() {});
+                                }
+                              },
+                              builder: (context, candidateData, rejectedData) {
+                                return Container(
                                   height: 70.0,
                                   margin: const EdgeInsets.all(1),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(6),
                                     border: Border.all(color: Colors.grey),
                                   ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      );
-                    } else {
-                      // 如果该座位没有学生
-                      return DragTarget<Student>(
-                        // 创建一个可接收拖动对象的目标区域
-                        onAccept: (draggedStudent) {
-                          // 当有拖动对象被接受时，更新该学生的座位号并保存座位信息
-                          if (widget.isDraggable) {
-                            draggedStudent.seatNumber = seatNumber;
-                            widget.currentClass.saveSeatingToHistory(widget.currentWeek);
-                            setState(() {});
+                                );
+                              },
+                            );
                           }
-                        },
-                        builder: (context, candidateData, rejectedData) {
-                          return Container(
-                            // 显示一个空的容器表示该座位为空
-                            height: 70.0,
-                            margin: const EdgeInsets.all(1),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.grey),
-                            ),
-                          );
-                        },
-                      );
-                    }
+                        }),
+                      ],
+                    );
                   }),
+                  TableRow(
+                    children: [
+                      const SizedBox.shrink(),
+                      ...List.generate(cols - 1, (col) => Center(child: Text('${col + 1}'))),
+                    ],
+                  ),
                 ],
-              );
-            }),
-            TableRow(
-              // 创建表格的最后一行，用于显示列号
-              children: [
-                const SizedBox.shrink(), // 第一列空着
-                // 生成列号
-                ...List.generate(cols - 1, (col) => Center(child: Text('${col + 1}'))),
-              ],
-            ),
-          ],
-        ),
-      ],
-    ); // 128行结束
+              ),
+            ],
+          );
+        }
+      },
+    );
   }
 }
