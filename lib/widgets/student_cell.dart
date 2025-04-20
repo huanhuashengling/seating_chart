@@ -1,14 +1,19 @@
+// lib/widgets/student_cell.dart
 import 'package:flutter/material.dart';
 import '../models/student.dart';
+import '../models/week_evaluate_log.dart';
+import '../utils/database_utils.dart';
 
 class StudentCell extends StatelessWidget {
   final Student? student;
   final Function(Student, int, int, int) onScoreChanged;
+  final int currentWeek;
 
   const StudentCell({
     Key? key,
     this.student,
     required this.onScoreChanged,
+    required this.currentWeek,
   }) : super(key: key);
 
   // 显示对话框的函数
@@ -40,8 +45,9 @@ class StudentCell extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           onScoreChanged(student!, disciplineDelta, answeringDelta, assignmentDelta);
+                          await _saveEvaluateLog(disciplineDelta, answeringDelta, assignmentDelta);
                           Navigator.of(context).pop(); // 关闭对话框
                         },
                         style: ElevatedButton.styleFrom(
@@ -56,8 +62,9 @@ class StudentCell extends StatelessWidget {
                         child: const Text('表扬'),
                       ),
                       ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           onScoreChanged(student!, -disciplineDelta, -answeringDelta, -assignmentDelta);
+                          await _saveEvaluateLog(-disciplineDelta, -answeringDelta, -assignmentDelta);
                           Navigator.of(context).pop(); // 关闭对话框
                         },
                         style: ElevatedButton.styleFrom(
@@ -79,6 +86,23 @@ class StudentCell extends StatelessWidget {
           );
         },
       );
+    }
+  }
+
+  // 保存评价记录到数据库
+  Future<void> _saveEvaluateLog(int disciplineDelta, int answeringDelta, int assignmentDelta) async {
+    if (student != null) {
+      final dbUtils = DatabaseUtils();
+      final now = DateTime.now();
+      final log = WeekEvaluateLog(
+        studentId: student!.id!,
+        week: currentWeek,
+        disciplineScore: disciplineDelta,
+        answeringScore: answeringDelta,
+        assignmentScore: assignmentDelta,
+        updateTime: now,
+      );
+      await dbUtils.insertOrUpdateWeekEvaluateLog(log);
     }
   }
 

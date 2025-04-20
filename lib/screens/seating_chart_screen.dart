@@ -159,10 +159,12 @@ class _SeatingChartScreenState extends State<SeatingChartScreen> {
                                       child: StudentCell(
                                         student: student,
                                         onScoreChanged: _onScoreChanged,
+                                        currentWeek: widget.currentWeek,
                                       ),
                                       feedback: StudentCell(
                                         student: student,
                                         onScoreChanged: _onScoreChanged,
+                                        currentWeek: widget.currentWeek,
                                       ),
                                       childWhenDragging: Container(
                                         height: 70.0,

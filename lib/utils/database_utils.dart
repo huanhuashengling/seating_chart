@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import '../models/student.dart';
 import '../models/class.dart';
 import '../models/week_seat_log.dart';
+import '../models/week_evaluate_log.dart';
 
 class DatabaseUtils {
   static const String _databaseName = 'classroom.db';
@@ -167,6 +168,39 @@ class DatabaseUtils {
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+   // 插入或更新每周评价记录
+  Future<int> insertOrUpdateWeekEvaluateLog(WeekEvaluateLog log) async {
+    final db = await database;
+    // 检查当前周次下是否有该学生的评价记录
+    final existingLogs = await db.query(
+      tableWeekEvaluateLog,
+      where: '${columnWeekEvaluateLogStudentId} = ? AND ${columnWeekEvaluateLogWeek} = ?',
+      whereArgs: [log.studentId, log.week],
+    );
+
+    if (existingLogs.isNotEmpty) {
+      // 如果有记录，更新相应的分数
+      final existingLog = WeekEvaluateLog.fromMap(existingLogs.first);
+      existingLog.answeringScore += log.answeringScore;
+      existingLog.assignmentScore += log.assignmentScore;
+      existingLog.disciplineScore += log.disciplineScore;
+      existingLog.updateTime = log.updateTime;
+
+      return await db.update(
+        tableWeekEvaluateLog,
+        existingLog.toMap(),
+        where: '${columnWeekEvaluateLogId} = ?',
+        whereArgs: [existingLog.id],
+      );
+    } else {
+      // 如果没有记录，插入一条新记录
+      return await db.insert(
+        tableWeekEvaluateLog,
+        log.toMap(),
+      );
+    }
   }
 
   // 新增方法：清空指定表的数据
